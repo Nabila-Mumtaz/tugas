@@ -1,0 +1,707 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+###### TM 2
+
+```{r}
+library(readr)
+library(dplyr)
+
+setwd("C:/Users/Nabila Mumtaz/OneDrive/Documents/Komstat/M2")
+data <- read_csv("Life Expectancy Data.csv", show_col_types = FALSE)
+
+print(names(data))
+
+#missvall
+missing_values <- sapply(data, function(x) sum(is.na(x)))
+
+missing_values
+
+
+missing_values <- sapply(data, function(x) sum(is.na(x)))
+
+
+cols_with_missing_values <- names(missing_values[missing_values > 0])
+
+#histogram
+for(col in cols_with_missing_values) {
+  # Plot histogram dengan warna pink
+  hist(data[[col]], main = paste("Histogram of", col), xlab = col, col = "pink")
+}
+
+#imputasi
+library(dplyr)
+
+data <- data %>% 
+  mutate(GDP = ifelse(is.na(GDP), median(GDP, na.rm = TRUE), GDP))
+
+
+data <- data %>% 
+  mutate(Population = ifelse(is.na(Population), median(Population, na.rm = TRUE), Population))
+
+# print
+data_2015 <- data %>%
+  filter(Year == 2015) %>%
+  group_by(Status) %>%
+  summarise(Count = n_distinct(Country))
+
+# Menampilkan hasil
+print(data_2015)
+
+#mean,median, max
+library(readr)
+library(dplyr)
+
+indonesia_life_expectancy_stats <- data %>%
+  filter(Country == "Indonesia") %>%
+  group_by(Year) %>%
+  summarise(
+    Mean = mean(`Life expectancy`, na.rm = TRUE),
+    Median = median(`Life expectancy`, na.rm = TRUE),
+    Min = min(`Life expectancy`, na.rm = TRUE),
+    Max = max(`Life expectancy`, na.rm = TRUE)
+  )
+
+print(indonesia_life_expectancy_stats)
+
+
+
+
+library(readr)
+library(dplyr)
+
+gdp_stats_2010 <- data %>%
+  filter(Year == 2010) %>%
+  group_by(Status) %>%
+  summarise(
+    Mean = mean(GDP, na.rm = TRUE),
+    Median = median(GDP, na.rm = TRUE),
+    Min = min(GDP, na.rm = TRUE),
+    Max = max(GDP, na.rm = TRUE)
+  )
+
+print(gdp_stats_2010)
+```
+
+###### TM2-Regresi
+```{r}
+setwd("C:/Users/Nabila Mumtaz/OneDrive/Documents/Komstat/M2")
+
+data <- read_csv("regresi.csv")
+
+head(data)
+
+# Buat vektor Y
+Y <- data$Y 
+print(Y)
+
+#Buat Matrix
+X <- cbind(Intercept = 1, X1 = data$X1, X2 = data$X2, X3 = data$X3, X4 = data$X4)
+
+X <- as.matrix(X)
+
+print(X)
+
+# Hitung (X^T*X)^-1X^T*Y
+betas <- solve(t(X) %*% X) %*% t(X) %*% Y
+print(betas)
+```
+
+##### TM 3
+```{r}
+# Tampilkan data
+data("mtcars") 
+ ?mtcars 
+ head(mtcars) 
+ tail(mtcars)
+ str(mtcars)
+ 
+ ###### Sorting
+ mySort <- function(x) {
+  for (i in 1:(length(x) - 1)) {
+    for (j in (i + 1):length(x)) {
+      if (x[i] > x[j]) {
+        temp <- x[i]
+        x[i] <- x[j]
+        x[j] <- temp
+      }
+    }
+  }
+  return(x)
+}
+
+sorted_wt <- mySort(mtcars$wt)
+
+print(paste("Sort:", toString(sorted_wt)))
+
+
+######Median
+myMedian <- function(x) {
+  sorted_x <- mySort(x)
+  n <- length(sorted_x)
+  if (n %% 2 == 0) {
+    return((sorted_x[n / 2] + sorted_x[n / 2 + 1]) / 2)
+  } else {
+    return(sorted_x[(n + 1) / 2])
+  }
+}
+
+
+median_wt <- myMedian(mtcars$wt)
+
+print(paste("Median:", median_wt))
+
+
+##### Variansi
+hitungVariansi <- function(x) {
+  n <- length(x)
+  total <- 0
+  for (nilai in x) {
+    total <- total + nilai
+  }
+  rataRata <- total / n
+
+  jumlahKuadrat <- 0
+  for (nilai in x) {
+    jumlahKuadrat <- jumlahKuadrat + (nilai - rataRata)^2
+  }
+  
+  variansi <- jumlahKuadrat / (n - 1)
+  return(variansi)
+}
+
+
+variansi_wt <- hitungVariansi(mtcars$wt)
+
+print(paste("Variansi:", variansi_wt))
+
+
+
+# Deviasi
+hitungSD <- function(x) {
+  variansi <- hitungVariansi(x)
+  deviasiStandar <- sqrt(variansi)
+  return(deviasiStandar)
+}
+
+sd_wt <- hitungSD(mtcars$wt)
+
+print(paste("Standar Deviasi :", sd_wt))
+
+```
+
+####### PRAKTIKUM 4
+## 1. Lakukan generate data dari distribusi Geometrik dan Weibull dengan metode transformasi invers. Jelaskan algoritma dan tunjukkan cara mendapatkan X dengan metode transformasi invers. Diketahui CDF:
+
+## •Distribusi Geometrik dengan parameter probabilitas p memiliki CDF:
+
+$$
+F(x) = 1 - (1-p)^{x+1}
+$$
+
+## Untuk mendapatkan nilai x dari distribusi Geometrik menggunakan metode transformasi invers, kita gunakan langkah-langkah berikut:
+
+$$
+u = 1 - (1-p)^{x+1}
+$$ $$
+(1-p)^{x+1} = 1 - u
+$$ $$
+x+1 = \frac{\log(1-u)}{\log(1-p)}
+$$ $$
+x = \left(\frac{\log(1-u)}{\log(1-p)}\right) - 1
+$$ \ 
+
+## •Distribusi Weibull dengan parameter bentuk alpha dan skala beta memiliki CDF:
+
+$$
+F(x) = 1 - e^{-\left(\frac{x}{\beta}\right)^\alpha}
+$$
+
+## Untuk mendapatkan nilai x dari distribusi Weibull menggunakan metode transformasi invers, kita gunakan langkah-langkah berikut:
+
+$$
+u = 1 - e^{-\left(\frac{x}{\beta}\right)^\alpha}
+$$ $$
+e^{-\left(\frac{x}{\beta}\right)^\alpha} = 1 - u
+$$ $$
+\left(\frac{x}{\beta}\right)^\alpha = -\ln(1-u)
+$$ $$
+\frac{x}{\beta} = \left(-\ln(1-u)\right)^{\frac{1}{\alpha}}
+$$ $$
+x = \beta \cdot \left(-\ln(1-u)\right)^{\frac{1}{\alpha}}
+$$ 
+
+
+## 2.Lakukan generate data dari fungsi bawaan di R (rgeom dan rweibull)
+
+## Generating Data with rgeom
+
+```{r}
+
+# Membuat seed untuk hasil yang bisa diulang
+set.seed(100)
+
+# Menetapkan jumlah sampel dan probabilitas
+n <- 1000
+p <- 0.2
+
+# Membangkitkan bilangan acak seragam
+u <- runif(n, 0, 1)
+
+# Menampilkan 6 bilangan acak seragam pertama
+head(u)
+
+# Menghitung distribusi Geometrik secara manual
+x <- (log(1-u) / log(1-p)) - 1
+
+# Menggunakan fungsi bawaan untuk distribusi Geometrik
+x1 <- rgeom(n, p)
+
+# Menampilkan 6 hasil hitungan manual pertama
+head(x)
+
+# Menampilkan 6 hasil fungsi bawaan pertama
+head(x1)
+
+
+
+```
+
+## Generating Data with rweibull
+
+```{r}
+# Menetapkan seed untuk konsistensi hasil
+set.seed(100)
+
+#  Membuat Parameter distribusi Weibull dan jumlah sampel
+n <- 1000
+alpha <- 1
+beta <- 2
+
+# Membangkitkan bilangan acak seragam
+v <- runif(n, 0, 1)
+
+# Menampilkan 6 bilangan acak seragam pertama
+head(v)
+
+# Menghitung distribusi Weibull secara manual dengan transformasi invers
+z <- beta * (-log(1-u))^(1/alpha)
+
+# Menggunakan fungsi bawaan R untuk distribusi Weibull
+z1 <- rweibull(n, shape = alpha, scale = beta)
+
+# Menampilkan 6 hasil perhitungan manual pertama
+head(z)
+
+# Menampilkan 6 hasil fungsi bawaan R pertama
+head(z1)
+
+```
+
+## 3. Buat visualisasi dalam bentuk histogram data hasil bangkitan dari kedua cara tersebut. Jelaskan insight yang didapatkan.
+
+## Histogram for Geometric Distribution
+
+```{r}
+# Histogram untuk data distribusi Geometrik dari metode transformasi invers
+hist(x, col = "blue4", main= "Histogram Geometrik", xlab = "Metode ITM")
+
+# Histogram untuk data distribusi Geometrik dari fungsi bawaan R
+hist(x1, col= "red", main= "Histogram Geometrik", xlab= "Fungsi rgeom")
+
+```
+
+## Histogram for Geometric Distribution
+
+```{r}
+# Membuat histogram dari data yang dihasilkan dengan metode transformasi invers
+hist(z, col = "pink", main= "Histogram Weibull", xlab = "metode itm")
+
+# Membuat histogram dari data yang dihasilkan dengan fungsi bawaan R
+hist(z1, col= "orange", main= "Histogram Weibull", xlab= "fungsi rweibull")
+
+```
+
+
+## Untuk Distribusi Geometrik:
+
+### Histogram biru adalah hasil distribusi Geometrik dari metode ITM menunjukkan bahwa data terkonsentrasi di nilai-nilai rendah dan frekuensi menurun secara eksponensial saat nilai x bertambah.
+
+### Histogram merah adalah hasil dari fungsi bawaan R. Bentuknya sangat mirip dengan histogram biru, yang artinya kedua metode tersebut memberikan hasil yang konsisten. Hal ini menunjukkan bahwa metode ITM berhasil mereplikasi distribusi yang dihasilkan oleh fungsi bawaan R dengan baik
+
+## Untuk Distribusi Weibull:
+
+### Histogram pink  menunjukkan data dari ITM untuk distribusi Weibull. Data menyebar dan menurun seiring dengan meningkatnya nilai, yang sesuai dengan ekspektasi distribusi Weibull, di mana kejadian seringkali terjadi dalam rentang waktu tertentu.
+
+### Histogram oranye adalah hasil dari fungsi bawaan R dan terlihat serupa dengan histogram dari ITM, yang menunjukkan bahwa metode ITM secara akurat menghasilkan sampel dari distribusi Weibull.
+
+## Insight yang Dapat Diambil:
+
+### Dari kedua distribusi, baik Geometrik maupun Weibull, histogram menunjukkan bahwa hasil yang kita dapatkan dari metode manual(ITM) tidak berbeda jauh dengan hasil dari fungsi bawaan R. 
+
+### Konsistensi tersebut memberikan kita keyakinan untuk menggunakan metode transformasi invers dalam situasi di mana kita mungkin perlu menyesuaikan proses atau tidak memiliki akses ke fungsi bawaan.
+
+
+
+
+
+```{r}
+# Menetapkan seed untuk konsistensi hasil
+set.seed(100)
+
+# Parameter distribusi dan jumlah sampel
+n <- 5000
+alpha <- 1
+beta <- 2
+
+# Membangkitkan bilangan acak seragam
+u <- runif(n, 0, 1)
+
+# Menghitung distribusi eksponensial secara manual dengan transformasi invers
+x_manual <- beta * (-log(1 - u))
+
+# Menggunakan fungsi bawaan R untuk distribusi eksponensial
+# rweibull dengan alpha = 1 sama dengan distribusi eksponensial
+x_builtin <- rexp(n, rate = 1/beta)
+
+# Membuat histogram dari data yang dihasilkan dengan metode transformasi invers
+hist(x_manual, col = 'pink', main = 'Histogram dari Transformasi Invers',
+     xlab = 'Data', ylab = 'Frekuensi', breaks = 50)
+
+# Membuat histogram dari data yang dihasilkan dengan fungsi bawaan R
+hist(x_builtin, col = 'lightblue', main = 'Histogram dari Fungsi Bawaan R',
+     xlab = 'Data', ylab = 'Frekuensi', breaks = 50)
+
+# Menampilkan 6 hasil perhitungan manual pertama dan dari fungsi bawaan
+head(x_manual)
+head(x_builtin)
+
+```
+
+
+
+####### Praktikum 5
+## Nomor 1
+
+Misalkan \(X\) variabel random yang berdistribusi diskrit dengan pmf sebagai berikut
+
+$$
+f_X(x) = \begin{cases}
+0.20, & \text{jika } x = -2 \\
+0.15, & \text{jika } x = -1 \\
+0.20, & \text{jika } x = 0 \\
+0.35, & \text{jika } x = 1 \\
+0.10, & \text{jika } x = 2 \\
+0, & \text{lainnya}
+\end{cases}
+$$
+
+dan diketahui CDF sebagai berikut
+
+$$
+F_X(x) = \begin{cases}
+0, & \text{jika } x < -2 \\
+0.20, & \text{jika } -2 \leq x < -1 \\
+0.35, & \text{jika } -1 \leq x < 0 \\
+0.55, & \text{jika } 0 \leq x < 1 \\
+0.90, & \text{jika } 1 \leq x < 2 \\
+1, & \text{jika } x \geq 2
+\end{cases}
+$$
+
+Lakukan simulasi untuk mendapatkan 100 bilangan acak dengan \textit{inverse transform method} (gunakan perulangan dan percabangan). Buat histogram dari data tersebut.
+
+
+
+```{r}
+# Buat Fungsi
+fungsi <- function(n) {
+  hasil <- numeric(n)
+  for (i in 1:n) {
+    u <- runif(1)
+    if (u <= 0.20) {hasil[i] <- -2
+    } else if (u <= 0.35) {hasil[i] <- -1
+    } else if (u <= 0.55) {hasil[i] <- 0
+    } else if (u <= 0.90) {hasil[i] <- 1
+    } else {hasil[i] <- 2
+    }
+  }
+  return(hasil)
+}
+
+# Pengaturan Seed
+set.seed(10)
+
+# Simulasi
+hasil_simulasi <- fungsi(100)
+
+# Pengembalian Hasil
+hasil_simulasi
+
+# Visualisasi Histogram
+hist(hasil_simulasi, main = "Histogram Simulasi Variabel Acak Diskrit", xlab = "Nilai", ylab = "Frekuensi")
+
+```
+
+### Interpretasi :
+
+Dari histogram, dapat dilihat pola frekuensi nilai-nilai variabel acak X. Nilai 0 dan 1 muncul paling sering, sesuai dengan peluang tertinggi. Meskipun peluang untuk nilai -2 dan -1 juga tidak kecil, namun keduanya muncul lebih jarang. Nilai 2, yang memiliki peluang terkecil, juga terlihat di histogram. Dengan hanya 1000 percobaan, simulasi ini sudah cukup bagus dalam menjelaskan distribusi yang diharapkan dari variabel acak X.
+
+
+## Nomor 2
+
+\textit{Generate} sampel acak dari distribusi \textit{Bernoulli} \( (p = 0.5) \) dengan metode \textit{ITM}, lalu buat histogramnya dan bandingkan dengan data dari fungsi \textit{rbinom()}.
+
+$$
+F_X(x) = \begin{cases}
+0, & \text{jika } x < 0 \\
+1 - p, & \text{jika } 0 \leq x < 1 \\
+1, & \text{jika } x \geq 1
+\end{cases}
+$$
+
+
+```{r}
+#Menetapkan Seed
+set.seed(100) 
+
+# Menetapkan nilai 
+n <- 100 
+
+p <- 0.5 
+
+y <- runif(n, min=0, max=1) # 
+
+# Fungsi Bernoulli
+get_xbernoulli <- function(data, p) { # #FungsiBernoulli
+  result <- numeric(length(data))
+  for (i in seq_along(data)) {
+    if (data[i] < p) {
+      result[i] <- 0
+    } else {
+      result[i] <- 1
+    }
+  }
+  return(result)
+}
+
+# Hasil Bernoulli dengan Fungsi Sendiri(ITM)
+result <- get_xbernoulli(y, p) 
+
+# Hasil Bernoulli dengan Fungsi rbinom
+y2 <- rbinom(n, size=1, prob=p) 
+
+# Visualisasi Histogram ITM
+par(mfrow=c(1,2))
+hist(result, col = 'pink', main = "ITM", xlab = "Nilai X", ylab = "Frekuensi")
+
+# Visualisasi Histogram Fungsi rbinom
+hist(y2, col = 'red', main = "Fungsi rbinom", xlab = "Nilai X", ylab = "Frekuensi") #VisualisasiHistogramFungsiRbinom
+
+```
+
+### Interpretasi:
+
+Dari histogram diatas dapat diketahui bahwa kedua metode yang digunakan dalam menghasilkan variabel acak Bernoulli yang memberikan hasil yang serupa. Hal ini menunjukkan bahwa kedua metode tersebut efektif dalam menghasilkan sampel sesuai dengan probabilitas yang telah ditetapkan. Kesamaan hasil antara kedua metode juga menunjukkan bahwa baik menggunakan metode inverse transformasi Monte Carlo (ITM)  maupun fungsi bawaan `rbinom()` menghasilkan sampel yang valid.
+
+## Nomor 3
+
+\textit{Generate} sampel acak dari distribusi \textit{Geometrik} \( (p = 0.75) \) dengan metode \textit{ITM} (Inverse Transform Method), lalu buat histogramnya dan bandingkan dengan data dari fungsi \textit{rgeom()}.
+
+$$
+F_X(x) = 1 - (1 - p)^{x+1}, \text{ untuk } x = 0, 1, 2, \ldots
+$$
+
+Catatan: gunakan code yang sudah dikerjakan pada percobaan sebelumnya dan tambahkan fungsi \textit{ceiling()}. Apakah ada perubahan?
+
+
+
+
+```{r}
+# Pengaturan Seed
+set.seed(100)
+
+# Menetapkan nilai
+n <- 1000 
+p <- 0.75 
+
+# Generate Data dengan Metode Inverse Transformasi dan ceiling
+u <- runif(n, min = 0, max = 1)
+
+x <- (log(1 - u) / log(1 - p)) - 1
+
+x_ceiling <- ceiling(x) 
+
+# Generate Data dengan Fungsi rgeom
+x_geom <- rgeom(n, prob = p) 
+
+# Visualisasi Histogram ITM + ceiling
+par(mfrow = c(1, 2))
+hist(x_ceiling, main = "Histogram dari ITM + ceiling", xlab = "x_itm + ceiling", col = 'pink', breaks = max(x_ceiling) + 1)
+
+# Visualisasi Histogram Fungsi rgeom
+hist(x_geom, main = "Histogram dari rgeom", xlab = "x_geom", col = 'red', breaks = max(x_geom) + 1) 
+
+```
+
+
+### Soal No 2
+
+```{r}
+
+# Data yang diberikan
+ambient_temperature <- c(23820, 24120, 23434, 23993, 23375, 23233, 24162, 23667,
+                         24056, 22786, 23785, 22987, 23799, 23661, 23852)
+temperature <- c(54749, 23323, 58775, 25854, 68297, 37481, 49542, 34101,
+                 33901, 29242, 39506, 43004, 53226, 54467, 57549)
+pressure <- c(225066, 100331, 230863, 10616, 277502, 148314, 197562, 138537,
+              137969, 117410, 164442, 181044, 222179, 227010, 232496)
+
+# Fungsi untuk menghitung mean
+calculate_mean <- function(v) {
+  sum(v) / length(v)
+}
+
+# Fungsi untuk menghitung standar deviasi
+calculate_sd <- function(v) {
+  n <- length(v)
+  mean_v <- calculate_mean(v)
+  sqrt(sum((v - mean_v)^2) / (n - 1))
+}
+
+# Fungsi untuk menghitung korelasi
+calculate_correlation <- function(x, y) {
+  n <- length(x)
+  mean_x <- calculate_mean(x)
+  mean_y <- calculate_mean(y)
+  sd_x <- calculate_sd(x)
+  sd_y <- calculate_sd(y)
+  
+  sum(((x - mean_x) * (y - mean_y))) / ((n - 1) * sd_x * sd_y)
+}
+
+# Menghitung korelasi antar variabel
+correlation_pressure_ambient <- calculate_correlation(ambient_temperature, pressure)
+correlation_pressure_temperature <- calculate_correlation(temperature, pressure)
+
+# Mencetak hasil korelasi
+cat("Korelasi antara Ambient Temperature dan Pressure:", correlation_pressure_ambient, "\n")
+cat("Korelasi antara Temperature dan Pressure:", correlation_pressure_temperature, "\n")
+
+# Menghitung estimasi parameter model regresi
+# Membuat matriks desain X dengan kolom pertama semua 1 untuk intercept
+X <- cbind(1, ambient_temperature, temperature)
+y <- pressure
+
+# Menghitung (X'X)^(-1)
+XtX_inverse <- solve(t(X) %*% X)
+
+# Menghitung (X'X)^(-1)(X'y)
+beta_hat <- XtX_inverse %*% t(X) %*% y
+
+# Mencetak estimasi parameter
+cat("Estimasi parameter model regresi (beta_hat):", "\n")
+print(beta_hat)
+
+```
+
+
+### Soal no 2
+```{r}
+# Data yang diberikan
+ambient_temperature <- c(23820, 24120, 23434, 23993, 23375, 23233, 24162, 23667,
+                         24056, 22786, 23785, 22987, 23799, 23661, 23852)
+temperature <- c(54749, 23323, 58775, 25854, 68297, 37481, 49542, 34101,
+                 33901, 29242, 39506, 43004, 53226, 54467, 57549)
+pressure <- c(225066, 100331, 230863, 10616, 277502, 148314, 197562, 138537,
+              137969, 117410, 164442, 181044, 222179, 227010, 232496)
+
+# Fungsi untuk menghitung korelasi berdasarkan formula yang diberikan
+calculate_correlation <- function(x, y) {
+  n <- length(x)
+  mean_x <- mean(x)
+  mean_y <- mean(y)
+  std_x <- sd(x)
+  std_y <- sd(y)
+  correlation <- sum((x - mean_x) * (y - mean_y)) / ((n - 1) * std_x * std_y)
+  return(correlation)
+}
+
+# Menghitung korelasi antara Ambient Temperature dan Pressure
+cor_ambient_pressure <- calculate_correlation(data$Ambient_Temperature, data$Pressure)
+
+# Menghitung korelasi antara Temperature dan Pressure
+cor_temperature_pressure <- calculate_correlation(data$Temperature, data$Pressure)
+# Menghitung korelasi antar variabel
+correlation_pressure_ambient <- calculate_correlation(ambient_temperature, pressure)
+correlation_pressure_temperature <- calculate_correlation(temperature, pressure)
+
+# Mencetak hasil korelasi
+cat("Korelasi antara Ambient Temperature dan Pressure:", correlation_pressure_ambient, "\n")
+cat("Korelasi antara Temperature dan Pressure:", correlation_pressure_temperature, "\n")
+
+# Menghitung estimasi parameter model regresi
+# Membuat matriks desain X dengan kolom pertama semua 1 untuk intercept
+X <- cbind(1, ambient_temperature, temperature)
+y <- pressure
+
+# Menghitung (X'X)^(-1)
+XtX_inverse <- solve(t(X) %*% X)
+
+# Menghitung (X'X)^(-1)(X'y)
+beta_hat <- XtX_inverse %*% t(X) %*% y
+
+# Mencetak estimasi parameter
+cat("Estimasi parameter model regresi (beta_hat):", "\n")
+print(beta_hat)
+
+```
+
+###### Soal NO 1
+
+```{r}
+# Fungsi untuk menghasilkan deret Fibonacci
+generate_fibonacci <- function(n) {
+  # Inisialisasi dua angka pertama
+  fib <- numeric(n)
+  fib[1] <- 0
+  fib[2] <- 1
+  
+  for (i in 3:n) {
+    fib[i] <- fib[i - 1] + fib[i - 2]
+  }
+  
+  return(fib)
+}
+
+# Menampilkan deret Fibonacci hingga 34
+fib_sequence <- generate_fibonacci(10)  # Menggunakan 10 karena 34 adalah elemen ke-10 dalam deret
+print(fib_sequence)
+
+```
+
+#### Soal No 3
+
+```{r}
+# Menetapkan seed untuk konsistensi hasil
+set.seed(100)
+
+# Parameter distribusi dan jumlah sampel
+n <- 5000
+alpha <- 1
+beta <- 2
+
+# Membangkitkan bilangan acak seragam
+u <- runif(n, 0, 1)
+
+# Transformasi invers untuk mendapatkan observasi dari distribusi eksponensial
+x_transform <- beta * (-log(1 - u))^(1 / alpha)
+
+# Menampilkan 6 bilangan acak hasil transformasi pertama
+head(x_transform)
+
+```
+
